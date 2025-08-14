@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Hospital Feedback Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen font-sans">
+  <!-- Sidebar and Main Container -->
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md p-6 hidden sm:block">
+      <h2 class="text-2xl font-bold text-blue-600 mb-6">🏥 BHS</h2>
+      <nav class="space-y-4">
+        <a href="https://bikanerheartandsuperspeciality.com/"
+          class="flex items-center text-gray-700 hover:text-blue-600">
+          <span class="material-icons mr-2">Home</span>
+        </a>
+        <a href="https://bikanerheartandsuperspeciality.com/"
+          class="flex items-center text-gray-700 hover:text-blue-600">
+          <span class="material-icons mr-2">About</span>
+        </a>
+        <a href="https://bikanerheartandsuperspeciality.com/"
+          class="flex items-center text-gray-700 hover:text-blue-600">
+          <span class="material-icons mr-2">Contact</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+      <!-- Header -->
+      <header class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">Negative Reviews</h1>
+        <button id="logoutBtn" onclick="logout()"
+          class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded hidden">
+          Logout
+        </button>
+      </header>
+      <section class="bg-white py-16 px-4 md:px-10 rounded-xl mb-3">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
+          <!-- Text Content -->
+          <div class="flex-1 text-center md:text-left">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 leading-tight mb-4">
+              Empower Your Feedback System
+            </h1>
+            <p class="text-lg text-gray-600 mb-6">
+              Manage, track and respond to patient reviews seamlessly with our
+              powerful hospital dashboard tools.
+            </p>
+            <a href="#dashboard"
+              class="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg shadow hover:bg-indigo-700 transition">
+              Get Started
+            </a>
+          </div>
+
+          <!-- Image -->
+          <div class="flex-1">
+            <img
+              src="https://img.freepik.com/free-vector/office-workers-analyzing-researching-business-data_74855-4445.jpg?t=st=1754396511~exp=1754400111~hmac=15ed68daf8c8ffd1de0a30d8e9aa55c62c46cfd89bc1f2b4b724f552355657f2&w=1480"
+              alt="Dashboard illustration" class="w-full rounded-lg shadow-lg" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Review Cards -->
+      <section id="dashboard" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 hidden mt-8">
+        <!-- Reviews will be dynamically inserted here -->
+      </section>
+
+      <!-- Login -->
+      <section id="loginBox" class="flex justify-center items-center min-h-[60vh]">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-sm">
+          <h2 class="text-2xl font-semibold text-center mb-6">Admin Login</h2>
+          <input id="email" type="email" placeholder="Email"
+            class="w-full mb-3 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <input id="password" type="password" placeholder="Password"
+            class="w-full mb-4 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <button onclick="login()"
+            class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded mb-2 transition">
+            Login
+          </button>
+          <button onclick="googleSignIn()"
+            class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded transition">
+            Login with Google
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: 'AIzaSyCF7UrWZXkcnquHhfeTvnDee7Sm1qByEVc',
+      authDomain: "feedify-review-app.firebaseapp.com",
+      projectId: "feedify-review-app",
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const hospitalEmailToId = {
+      'thelaundryhouse@feedify.com': 'Feed@laundryhouse',
+    };
+
+    function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      auth
+        .signInWithEmailAndPassword(email, password)
+        .then(() => showDashboard())
+        .catch((err) => alert('Login Failed: ' + err.message));
+    }
+
+    function googleSignIn() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth
+        .signInWithPopup(provider)
+        .then(() => showDashboard())
+        .catch((err) => alert('Google Sign-In Failed: ' + err.message));
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        document.getElementById('loginBox').classList.remove('hidden');
+        document.getElementById('dashboard').classList.add('hidden');
+        document.getElementById('logoutBtn').classList.add('hidden');
+      });
+    }
+
+    function showDashboard() {
+      document.getElementById('loginBox').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      document.getElementById('logoutBtn').classList.remove('hidden');
+      loadReviews();
+    }
+
+    function loadReviews() {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const email = user.email;
+      const hospitalId = hospitalEmailToId[email];
+
+      if (!hospitalId) {
+        alert('Unauthorized user.');
+        logout();
+        return;
+      }
+
+      db.collection('laundry-review')
+        .where('hospital_id', '==', hospitalId)
+        .orderBy('createdAt', 'desc')
+        .get()
+        .then((snapshot) => {
+          const dashboard = document.getElementById('dashboard');
+          dashboard.innerHTML = '';
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const date =
+              data.createdAt?.toDate().toLocaleString() || 'Unknown';
+            dashboard.innerHTML += `
+                    <div class="bg-blue-100 p-5 rounded-lg shadow hover:shadow-xl transition">
+                      <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-bold text-gray-800">${data.name
+              }</h3>
+                        <span class="text-sm text-gray-500">${date}</span>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-1"><strong>Mobile:</strong> ${data.mobile
+              }</p>
+                      <p class="text-yellow-500 mb-2">⭐ ${data.rating} / 5</p>
+                      <p class="text-gray-700 italic mb-2"><strong>Feedback:</strong>${data.feedback || 'No feedback provided'
+              }</p>
+                      <p>${data.questions.map(
+                (q) => `
+              <p class="text-sm text-gray-800">
+                <strong>${q.question}</strong><br/>
+                <span class="text-indigo-600 font-medium">Answer:</span> ${q.answer}
+              </p>
+            `
+              )}</p>
+                    </div>
+                  `;
+          });
+        })
+
+        .catch((err) => console.error('Error loading reviews:', err));
+    }
+
+    auth.onAuthStateChanged((user) => {
+      if (user) showDashboard();
+    });
+  </script>
+</body>
+
+</html>
