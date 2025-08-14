@@ -109,9 +109,10 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // const hospitalEmailToId = {
-    //   'thelaundryhouse@feedify.com': 'Feed@laundryhouse',
-    // };
+    const hospitalEmailToId = {
+  'thelaundryhouse@feedify.com': 'ZBVenyk8IQmMkte6zFex',
+};
+
 
     function login() {
       const email = document.getElementById('email').value;
@@ -150,8 +151,7 @@
       if (!user) return;
 
       const email = user.email;
-      // const hospitalId = hospitalEmailToId[email];
-      const hospitalId = 'ZBVenyk8IQmMkte6zFex';
+      const hospitalId = hospitalEmailToId[email];
       if (!hospitalId) {
         alert('Unauthorized user.');
         logout();
