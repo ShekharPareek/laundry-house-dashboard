@@ -95,11 +95,15 @@
   </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: 'AIzaSyCF7UrWZXkcnquHhfeTvnDee7Sm1qByEVc',
-      authDomain: "feedify-review-app.firebaseapp.com",
-      projectId: "feedify-review-app",
-    };
+    const firebaseConfig = { 
+      apiKey: "AIzaSyCF7UrWZXkcnquHhfeTvnDee7Sm1qByEVc",
+       authDomain: "feedify-review-app.firebaseapp.com",
+        projectId: "feedify-review-app", 
+        storageBucket: "feedify-review-app.firebasestorage.app",
+         messagingSenderId: "566180058802",
+          appId: "1:566180058802:web:e842136a578e16b8dddbab",
+          measurementId: "G-EMETYTH8GN" 
+        };
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
